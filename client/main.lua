@@ -136,19 +136,34 @@ end)
 CreateThread(function()
     while true do
         local ped = PlayerPedId()
-        if IsPedArmed(ped, 7) == 1 and (IsControlJustReleased(0, 24) or IsDisabledControlJustReleased(0, 24)) then
+        if IsPedArmed(ped, 7) == 1 then
             local weapon = GetSelectedPedWeapon(ped)
             local ammo = GetAmmoInPedWeapon(ped, weapon)
-            TriggerServerEvent("weapons:server:UpdateWeaponAmmo", CurrentWeaponData, tonumber(ammo))
-            if MultiplierAmount > 0 then
-                TriggerServerEvent("weapons:server:UpdateWeaponQuality", CurrentWeaponData, MultiplierAmount)
-                MultiplierAmount = 0
+            if (IsControlJustReleased(0, 24) or IsDisabledControlJustReleased(0, 24)) then
+                TriggerServerEvent("weapons:server:UpdateWeaponAmmo", CurrentWeaponData, tonumber(ammo))
+                if MultiplierAmount > 0 then
+                    TriggerServerEvent("weapons:server:UpdateWeaponQuality", CurrentWeaponData, MultiplierAmount)
+                    MultiplierAmount = 0
+                end
+            elseif (IsControlJustReleased(0, 45) or IsDisabledControlJustReleased(0, 45)) and ammo == 0 then
+                local ammoType =  QBCore.Shared.Weapons[weapon]["ammotype"]
+                print("triggered")
+                -- print(ammoType)
+                QBCore.Functions.TriggerCallback("weapon:server:GetWeaponAmmoTypeItem", function(result)
+                    print(result)
+                    if result ~= nil then
+                        TriggerEvent('weapon:client:AddAmmo', ammoType, 100, result)
+                    else 
+                        QBCore.Functions.Notify("You don't have any more ammo for this weapon!", "error")
+                    end
+                    
+                end, ammoType)
+                --TriggerEvent('weapon:client:AddAmmo', ammotype, 100, 'pistol_ammo')
             end
-        end
+        end 
         Wait(1)
     end
 end)
-
 CreateThread(function()
     while true do
         if LocalPlayer.state.isLoggedIn then

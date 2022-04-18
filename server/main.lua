@@ -767,3 +767,22 @@ end)
 QBCore.Functions.CreateUseableItem('snspistol_luxuryfinish', function(source, item)
     TriggerClientEvent('weapons:client:EquipAttachment', source, item, 'luxuryfinish')
 end)
+
+QBCore.Functions.CreateCallback("weapon:server:GetWeaponAmmoTypeItem", function(source, cb, ammoType)
+    local Player = QBCore.Functions.GetPlayer(source)
+    local retval = nil
+    print('triggered')
+    if ammoType then
+        if Player then
+            local ItemData = Player.Functions.GetAmmoByType(ammoType)
+            --print(ItemData)
+            if ItemData then
+                retval = ItemData.name or nil
+            end
+        end
+    end
+    if retval ~= nil then
+        Player.Functions.RemoveItem(retval, 1)
+    end
+    cb(retval)
+end)
